@@ -1,44 +1,56 @@
-**!! Atenção: Renomeie o seu repositório para (Tema)_(NomeDoProjeto). !!** 
+# Flood Rush
 
-Temas:
- - Grafos1
- - Grafos2
- - PD
- - D&C
- - Greed
- - Final 
- 
- **!! *Não coloque os nomes dos alunos no título do repositório*. Exemplo de título correto: Grafos2_Labirinto-do-Minotauro !!**
- 
- (Apague essa seção)
-
-# NomedoProjeto
-
-**Número da Lista**: X<br>
-**Conteúdo da Disciplina**: XXXXXXXXXX<br>
+**Número da Lista**: 2<br>
+**Conteúdo da Disciplina**: Grafos 2<br>
 
 ## Alunos
 |Matrícula | Aluno |
 | -- | -- |
-| xx/xxxxxx  |  xxxx xxxx xxxxx |
-| xx/xxxxxx  |  xxxx xxxx xxxxx |
+| 17/0129411  |  Guilherme Mendes Pereira |
+| 17/0163571 |  Murilo Loiola Dantas |
 
 ## Sobre 
-Descreva os objetivos do seu projeto e como ele funciona. 
+Runner é um jogo do gênero corrida. O objetivo do jogador é chegar ao final da fase antes da máquina.
 
 ## Screenshots
-Adicione 3 ou mais screenshots do projeto em funcionamento.
 
 ## Instalação 
-**Linguagem**: xxxxxx<br>
-**Framework**: (caso exista)<br>
-Descreva os pré-requisitos para rodar o seu projeto e os comandos necessários.
+**Linguagem**: Python<br>
+**Pré-requisitos**: [Python](https://www.python.org/downloads/), [pygame](https://www.pygame.org/wiki/GettingStarted) e [pip](https://packaging.python.org/tutorials/installing-packages/).<br>
+**Execução do projeto** <br>
+
+* Clone o repositório:
+```bash
+git clone https://github.com/projeto-de-algoritmos/Grafos2_Runner.git
+```
+* Acesse o repositório e instale as bibliotecas necessárias:
+```bash
+cd Grafos2_Runner/
+pip3 install -r requirements.txt
+```
+* Execute o Runner e divirta-se:
+```bash
+python3 src/game.py
+```
 
 ## Uso 
-Explique como usar seu projeto caso haja algum passo a passo após o comando de execução.
+
+### Vídeo explicativo
+
+* Player - verde.
+* Saída - vermelho.
+* Máquina - roxo.
+
+* Clique com o botão esquerdo do mouse em *Start*
+* Controle o player com ←, ↑, →,  ↓ do teclado.
+* Encontre a saída antes da máquina.
+* Clique em *Restart* para jogar novamente.
+* Clique em *Quit* para encerrar o jogo.
 
 ## Outros 
-Quaisquer outras informações sobre seu projeto podem ser descritas abaixo.
+A máquina sabe o menor caminho, mas sempre começa mais longe da saída do que o jogador.
+Preste atenção na barra de energia. Não será possível passar por um caminho que exija mais energia do que o jogador possui.
+O grafo gerado é aleatório e sempre será fortemente conectado.
 
 
 
