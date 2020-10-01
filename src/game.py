@@ -159,6 +159,8 @@ class Graph(object):
                 draw_circle(node, colors.MACHINE)
             elif out.position == (node.rect[0], node.rect[1]):
                 draw_circle(node, colors.EXIT)
+            elif node.explored:
+                draw_circle(node, colors.BRIGHT_GREEN)
             else:
                 draw_circle(node, colors.NODE)
 
@@ -169,6 +171,7 @@ class Node(object):
         self.color = colors.NODE
         self.neighbours = set()
         self.strong = False
+        self.explored = False
 
 
 class Player(object):
@@ -182,6 +185,43 @@ class Exit(object):
     def __init__(self):
         self.color = colors.EXIT
         self.position = random_pos()
+
+
+def djikstra(graph, start, goal):
+    unseen_nodes = dict.fromkeys(graph.nodes, 0)
+    shortest_distance = {}
+    predecessor = {}
+    path = []
+    infinity = 9999999
+
+    for node in unseen_nodes:
+        shortest_distance[node] = infinity
+    shortest_distance[start] = 0
+
+    while unseen_nodes:
+        min_node = None
+        for node in unseen_nodes:
+            if min_node is None:
+                min_node = node
+            elif shortest_distance[node] < shortest_distance[min_node]:
+                min_node = node
+
+        for neighbour, weight in min_node.neighbours.items():
+            if weight + shortest_distance[min_node] < shortest_distance[neighbour]:
+                shortest_distance[neighbour] = weight + shortest_distance[min_node]
+                predecessor[neighbour] = min_node
+        unseen_nodes.pop(min_node)
+
+    current_node = goal
+    while current_node != start:
+        path.insert(0, current_node)
+        current_node = predecessor[current_node]
+
+    print(str(path))
+    for node in path:
+        node.explored = True
+
+    print(shortest_distance[goal])
 
 
 # generates graph with random edges
@@ -405,45 +445,8 @@ def stamina_regen(player):
 def min_dist(machine, player, out):
     while math.hypot(player.position[0] - out.position[0], player.position[1] - out.position[1]) < 300:
         player.position = random_pos()
-    while math.hypot(machine.position[0] - out.position[0], machine.position[1] - out.position[1]) < math.hypot(
-            player.position[0] - out.position[0], player.position[1] - out.position[1]):
+    while math.hypot(machine.position[0] - out.position[0], machine.position[1] - out.position[1]) < math.hypot(player.position[0] - out.position[0], player.position[1] - out.position[1]):
         machine.position = random_pos()
-
-
-def dijsktra(graph, initial, end):
-    shortest_paths = {initial: (None, 0)}
-    current_node = initial
-    visited = set()
-
-    while current_node != end:
-        visited.add(current_node)
-        destinations = graph.edges[current_node]
-        weight_to_current_node = shortest_paths[current_node][1]
-
-        for next_node in destinations:
-            weight = graph.weights[(current_node, next_node)] + weight_to_current_node
-            if next_node not in shortest_paths:
-                shortest_paths[next_node] = (current_node, weight)
-            else:
-                current_shortest_weight = shortest_paths[next_node][1]
-                if current_shortest_weight > weight:
-                    shortest_paths[next_node] = (current_node, weight)
-
-        next_destinations = {node: shortest_paths[node] for node in shortest_paths if node not in visited}
-        if not next_destinations:
-            return "invalid path"
-        # next node is the destination with the lowest weight
-        current_node = min(next_destinations, key=lambda k: next_destinations[k][1])
-
-    # Work back through destinations in shortest path
-    path = []
-    while current_node is not None:
-        path.append(current_node)
-        next_node = shortest_paths[current_node][0]
-        current_node = next_node
-    # Reverse path
-    path = path[::-1]
-    return path
 
 
 # main game loop where player input is read
@@ -463,9 +466,10 @@ def game_loop():
         node.neighbours = dict.fromkeys(node.neighbours, random.randint(1, 3))
 
     draw_edges(graph)
+
     min_dist(machine, player, out)
 
-    # dijsktra(graph, machine, out)
+    djikstra(graph, graph.positions[machine.position], graph.positions[out.position])
 
     global stop_thread
     stop_thread = False
