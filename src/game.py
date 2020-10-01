@@ -217,11 +217,7 @@ def djikstra(graph, start, goal):
         path.insert(0, current_node)
         current_node = predecessor[current_node]
 
-    print(str(path))
-    for node in path:
-        node.explored = True
-
-    print(shortest_distance[goal])
+    return path
 
 
 # generates graph with random edges
@@ -430,23 +426,35 @@ def arrow(scr, lcolor, tricolor, start, end, trirad, thickness=1):
                                          end[1] + trirad * math.cos(rotation + 120 * rad))))
 
 
-# flood function, runs until all reachable nodes are flooded or program is closed
-def stamina_regen(player):
-    global stop_thread
-    while True:
-        if stop_thread:
-            break
-        if player.stamina < 10:
-            time.sleep(1)
-            player.stamina += 1
-
-
 # ensures minimum distance between starting nodes
 def min_dist(machine, player, out):
     while math.hypot(player.position[0] - out.position[0], player.position[1] - out.position[1]) < 300:
         player.position = random_pos()
     while math.hypot(machine.position[0] - out.position[0], machine.position[1] - out.position[1]) < math.hypot(player.position[0] - out.position[0], player.position[1] - out.position[1]):
         machine.position = random_pos()
+
+
+def machine_mov(machine, path, player, graph):
+    global stop_thread
+    current_node = graph.positions[machine.position]
+    for pos in path:
+        if stop_thread:
+            break
+        time.sleep(1)
+        if player.stamina < 10:
+            player.stamina += 1
+        if machine.stamina < 10:
+            machine.stamina += 1
+        while machine.stamina < current_node.neighbours[pos]:
+            time.sleep(1)
+            if player.stamina < 10:
+                player.stamina += 1
+            if machine.stamina < 10:
+                machine.stamina += 1
+        time.sleep(0.25)
+        machine.stamina -= current_node.neighbours[pos]
+        machine.position = (pos.rect[0], pos.rect[1])
+        current_node = graph.positions[machine.position]
 
 
 # main game loop where player input is read
@@ -469,11 +477,13 @@ def game_loop():
 
     min_dist(machine, player, out)
 
-    djikstra(graph, graph.positions[machine.position], graph.positions[out.position])
+    path = djikstra(graph, graph.positions[machine.position], graph.positions[out.position])
+    pos = 0
 
     global stop_thread
     stop_thread = False
-    x = threading.Thread(target=stamina_regen, args=(player,))
+
+    x = threading.Thread(target=machine_mov, args=(machine, path, player, graph))
     x.start()
 
     while True:
