@@ -24,8 +24,8 @@ screen = pygame.display.set_mode(size)
 screen.fill(colors.WHITE)
 
 pygame.display.set_caption("Runner")
-icon = pygame.image.load('src/images/runners.png')
-menu = pygame.image.load('src/images/menu.png')
+icon = pygame.image.load('images/runners.png')
+menu = pygame.image.load('images/menu.png')
 icon_big = pygame.transform.scale(icon, (80, 80))
 pygame.display.set_icon(icon)
 
@@ -153,14 +153,14 @@ class Graph(object):
         pygame.draw.rect(screen, colors.WHITE, (1232, 5, 100, 16))
         pygame.draw.rect(screen, colors.MACHINE, (1232, 5, machine.stamina * 10, 16))
         for node in self.nodes:
-            if player.position == (node.rect[0], node.rect[1]):
+            if node.buff:
+                draw_circle(node, colors.BUFF)
+            elif player.position == (node.rect[0], node.rect[1]):
                 draw_circle(node, colors.PLAYER)
             elif machine.position == (node.rect[0], node.rect[1]):
                 draw_circle(node, colors.MACHINE)
             elif out.position == (node.rect[0], node.rect[1]):
                 draw_circle(node, colors.EXIT)
-            elif node.explored:
-                draw_circle(node, colors.BRIGHT_GREEN)
             else:
                 draw_circle(node, colors.NODE)
 
@@ -171,7 +171,7 @@ class Node(object):
         self.color = colors.NODE
         self.neighbours = set()
         self.strong = False
-        self.explored = False
+        self.buff = False
 
 
 class Player(object):
@@ -187,7 +187,7 @@ class Exit(object):
         self.position = random_pos()
 
 
-def djikstra(graph, start, goal):
+def dijkstra(graph, start, goal):
     unseen_nodes = dict.fromkeys(graph.nodes, 0)
     shortest_distance = {}
     predecessor = {}
@@ -218,6 +218,16 @@ def djikstra(graph, start, goal):
         current_node = predecessor[current_node]
 
     return path, shortest_distance[goal]
+
+
+# generate stamina nodes for the player
+def create_buff(node):
+    q = [node]
+    buffs = q.pop(0)
+    buffs.buff = True
+    for i in buffs.neighbours:
+        if not i.buff:
+            q.append(i)
 
 
 # generates graph with random edges
@@ -428,15 +438,15 @@ def arrow(scr, lcolor, tricolor, start, end, trirad, thickness=1):
 
 # ensures minimum distance between starting nodes
 def min_dist(graph, player, machine, out):
-    player_distance = djikstra(graph, graph.positions[player.position], graph.positions[out.position])
+    player_distance = dijkstra(graph, graph.positions[player.position], graph.positions[out.position])
     while player_distance[1] < 20:
         player.position = random_pos()
-        player_distance = djikstra(graph, graph.positions[player.position], graph.positions[out.position])
+        player_distance = dijkstra(graph, graph.positions[player.position], graph.positions[out.position])
 
-    machine_distance = djikstra(graph, graph.positions[machine.position], graph.positions[out.position])
+    machine_distance = dijkstra(graph, graph.positions[machine.position], graph.positions[out.position])
     while machine_distance[1] <= player_distance[1]:
         machine.position = random_pos()
-        machine_distance = djikstra(graph, graph.positions[machine.position], graph.positions[out.position])
+        machine_distance = dijkstra(graph, graph.positions[machine.position], graph.positions[out.position])
 
     return machine_distance
 
@@ -474,6 +484,9 @@ def game_loop():
     machine.color = colors.MACHINE
     out = Exit()
     out.position = random_pos()
+    buff = Exit()
+    buff.position = random_pos()
+
     rev_graph = reverse_graph(graph)
     strongly_connect(graph, rev_graph, player.position)
 
@@ -490,7 +503,10 @@ def game_loop():
     x = threading.Thread(target=machine_mov, args=(machine, path, player, graph))
     x.start()
 
+    create_buff(node)
+
     while True:
+
         graph.update(player, out, machine)
 
         if player.position == out.position:
@@ -501,6 +517,8 @@ def game_loop():
             game_lose_text()
             restart_game_window()
             quit_game()
+        elif graph.positions[player.position].buff:
+            player.stamina = 9
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
