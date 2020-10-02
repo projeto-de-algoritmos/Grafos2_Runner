@@ -170,7 +170,9 @@ class Node(object):
         self.rect = None
         self.color = colors.NODE
         self.neighbours = set()
+        # used to ensure graph is strongly connected
         self.strong = False
+        # determines if node is a stamina recharge node
         self.buff = False
 
 
@@ -187,6 +189,7 @@ class Exit(object):
         self.position = random_pos()
 
 
+# shortest path function
 def dijkstra(graph, start, goal):
     unseen_nodes = dict.fromkeys(graph.nodes, 0)
     shortest_distance = {}
@@ -220,7 +223,7 @@ def dijkstra(graph, start, goal):
     return path, shortest_distance[goal]
 
 
-# generate stamina nodes for the player
+# generate stamina nodes randomly
 def create_buff(graph, player, machine, out):
     for i in range(1, 6):
         x = random.randint(0, 16) * 80 + starting_x
@@ -426,7 +429,7 @@ def draw_circle(node, color):
     return pygame.draw.circle(screen, color, node.rect.center, 10)
 
 
-# function to transform line to line with arrow
+# function to transform line to arrow
 def arrow(scr, lcolor, tricolor, start, end, trirad, thickness=1):
     pygame.draw.line(scr, lcolor, start, end, thickness)
     rotation = (math.atan2(start[1] - end[1], end[0] - start[0])) + math.pi / 2
@@ -453,6 +456,7 @@ def min_dist(graph, player, machine, out):
     return machine_distance
 
 
+# function moves the machine along shortest path and is also responsible for player/machine stamina regeneration
 def machine_mov(machine, path, player, graph):
     global stop_thread
     current_node = graph.positions[machine.position]
