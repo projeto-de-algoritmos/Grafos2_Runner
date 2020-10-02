@@ -24,8 +24,8 @@ screen = pygame.display.set_mode(size)
 screen.fill(colors.WHITE)
 
 pygame.display.set_caption("Runner")
-icon = pygame.image.load('images/runners.png')
-menu = pygame.image.load('images/menu.png')
+icon = pygame.image.load('src/images/runners.png')
+menu = pygame.image.load('src/images/menu.png')
 icon_big = pygame.transform.scale(icon, (80, 80))
 pygame.display.set_icon(icon)
 
