@@ -13,6 +13,17 @@
 Runner é um jogo do gênero corrida. O objetivo do jogador é chegar ao final da fase antes da máquina.
 
 ## Screenshots
+* Menu:
+
+![print_menu](src/images/menu2.png)
+
+* Jogo em funcionamento + tela de vitória:
+
+![victory](src/images/game.gif)
+
+* Tela de derrota:
+
+![lose](src/images/lose.png)
 
 ## Instalação 
 **Linguagem**: Python<br>
@@ -36,10 +47,12 @@ python3 src/game.py
 ## Uso 
 
 ### Vídeo explicativo
+[Video](https://github.com/projeto-de-algoritmos/Grafos2_Runner/blob/master/video_explicacao.mp4)
 
 * Player - verde.
 * Saída - vermelho.
 * Máquina - roxo.
+* Energy charge - amarelo.
 
 * Clique com o botão esquerdo do mouse em *Start*
 * Controle o player com ←, ↑, →,  ↓ do teclado.
@@ -51,7 +64,3 @@ python3 src/game.py
 A máquina sabe o menor caminho, mas sempre começa mais longe da saída do que o jogador.
 Preste atenção na barra de energia. Não será possível passar por um caminho que exija mais energia do que o jogador possui.
 O grafo gerado é aleatório e sempre será fortemente conectado.
-
-
-
-
