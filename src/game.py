@@ -217,7 +217,7 @@ def djikstra(graph, start, goal):
         path.insert(0, current_node)
         current_node = predecessor[current_node]
 
-    return path
+    return path, shortest_distance[goal]
 
 
 # generates graph with random edges
@@ -427,17 +427,24 @@ def arrow(scr, lcolor, tricolor, start, end, trirad, thickness=1):
 
 
 # ensures minimum distance between starting nodes
-def min_dist(machine, player, out):
-    while math.hypot(player.position[0] - out.position[0], player.position[1] - out.position[1]) < 300:
+def min_dist(graph, player, machine, out):
+    player_distance = djikstra(graph, graph.positions[player.position], graph.positions[out.position])
+    while player_distance[1] < 20:
         player.position = random_pos()
-    while math.hypot(machine.position[0] - out.position[0], machine.position[1] - out.position[1]) < math.hypot(player.position[0] - out.position[0], player.position[1] - out.position[1]):
+        player_distance = djikstra(graph, graph.positions[player.position], graph.positions[out.position])
+
+    machine_distance = djikstra(graph, graph.positions[machine.position], graph.positions[out.position])
+    while machine_distance[1] <= player_distance[1]:
         machine.position = random_pos()
+        machine_distance = djikstra(graph, graph.positions[machine.position], graph.positions[out.position])
+
+    return machine_distance
 
 
 def machine_mov(machine, path, player, graph):
     global stop_thread
     current_node = graph.positions[machine.position]
-    for pos in path:
+    for pos in path[0]:
         if stop_thread:
             break
         time.sleep(1)
@@ -475,10 +482,7 @@ def game_loop():
 
     draw_edges(graph)
 
-    min_dist(machine, player, out)
-
-    path = djikstra(graph, graph.positions[machine.position], graph.positions[out.position])
-    pos = 0
+    path = min_dist(graph, player, machine, out)
 
     global stop_thread
     stop_thread = False
