@@ -153,14 +153,14 @@ class Graph(object):
         pygame.draw.rect(screen, colors.WHITE, (1232, 5, 100, 16))
         pygame.draw.rect(screen, colors.MACHINE, (1232, 5, machine.stamina * 10, 16))
         for node in self.nodes:
-            if node.buff:
-                draw_circle(node, colors.BUFF)
-            elif player.position == (node.rect[0], node.rect[1]):
+            if player.position == (node.rect[0], node.rect[1]):
                 draw_circle(node, colors.PLAYER)
             elif machine.position == (node.rect[0], node.rect[1]):
                 draw_circle(node, colors.MACHINE)
             elif out.position == (node.rect[0], node.rect[1]):
                 draw_circle(node, colors.EXIT)
+            elif node.buff:
+                draw_circle(node, colors.BUFF)
             else:
                 draw_circle(node, colors.NODE)
 
@@ -221,13 +221,15 @@ def dijkstra(graph, start, goal):
 
 
 # generate stamina nodes for the player
-def create_buff(node):
-    q = [node]
-    buffs = q.pop(0)
-    buffs.buff = True
-    for i in buffs.neighbours:
-        if not i.buff:
-            q.append(i)
+def create_buff(graph, player, machine, out):
+    for i in range(1, 6):
+        x = random.randint(0, 16) * 80 + starting_x
+        y = random.randint(0, 9) * 80 + starting_y
+        while (x, y) == player.position or (x, y) == machine.position or (x, y) == out.position or graph.positions[(x, y)].buff:
+            x = random.randint(0, 16) * 80 + starting_x
+            y = random.randint(0, 9) * 80 + starting_y
+        else:
+            graph.positions[(x, y)].buff = True
 
 
 # generates graph with random edges
@@ -472,6 +474,9 @@ def machine_mov(machine, path, player, graph):
         machine.stamina -= current_node.neighbours[pos]
         machine.position = (pos.rect[0], pos.rect[1])
         current_node = graph.positions[machine.position]
+        if current_node.buff:
+            machine.stamina = 10
+            current_node.buff = False
 
 
 # main game loop where player input is read
@@ -484,8 +489,6 @@ def game_loop():
     machine.color = colors.MACHINE
     out = Exit()
     out.position = random_pos()
-    buff = Exit()
-    buff.position = random_pos()
 
     rev_graph = reverse_graph(graph)
     strongly_connect(graph, rev_graph, player.position)
@@ -503,7 +506,7 @@ def game_loop():
     x = threading.Thread(target=machine_mov, args=(machine, path, player, graph))
     x.start()
 
-    create_buff(node)
+    create_buff(graph, player, machine, out)
 
     while True:
 
@@ -518,7 +521,8 @@ def game_loop():
             restart_game_window()
             quit_game()
         elif graph.positions[player.position].buff:
-            player.stamina = 9
+            player.stamina = 10
+            graph.positions[player.position].buff = False
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
